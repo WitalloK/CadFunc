@@ -1,0 +1,45 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: tde-db
+    restart: always
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+      - MYSQL_DATABASE=db_cadastrar
+    ports:
+      - "3307:3306" 
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - tde-network
+
+  backend-service:
+    build: ./back
+    container_name: tde-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=tde-db
+      - DB_USER=root
+      - DB_PASSWORD=
+      - DB_NAME=db_cadastrar
+    depends_on:
+      - db
+    networks:
+      - tde-network
+
+  frontend-service:
+    build: ./front
+    container_name: tde-frontend
+    ports:
+      - "8080:80"
+    networks:
+      - tde-network
+
+networks:
+  tde-network:
+    driver: bridge
+
+volumes:
+  db_data:
